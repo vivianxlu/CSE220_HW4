@@ -95,6 +95,15 @@ int create_socket(int port) {
     return sockfd;
 }
 
+void free_board(int **board, int board_height) {
+    if (board != NULL) {
+        for (int i = 0; i < board_height; i++) {
+            free(board[i]);  // Free each row
+        }
+        free(board);  // Finally free the pointer to the array of rows
+    }
+}
+
 // Read a message from client => server
 int read_message(int sockfd, char * buffer, int buffer_size) {
     int bytes_read = read(sockfd, buffer, buffer_size - 1);
@@ -115,22 +124,24 @@ void write_message(int sockfd, const char * message) {
 
 // Halt Reponse to a Forfeit Packet
 void halt_response(int sockfd, int other_sockfd) {
-    write_message(sockfd, "H 0\n"); // Send a (loss) Halt Packet to P1
+    write_message(sockfd, "H 0"); // Send a (loss) Halt Packet to P1
     read_message(other_sockfd, NULL, 0); // Read from the other socket without storing it
-    write_message(other_sockfd, "H 1\n"); // Send a (win) Halt Packet to P2
+    write_message(other_sockfd, "H 1"); // Send a (win) Halt Packet to P2
 
+    free_board(p1_board, board_height);
+    free_board(p2_board, board_height);
     // Close the connection to the ports after sending the Halt packets
     close(sockfd);  // Close Player A's connection
     close(other_sockfd);  // Close Player B's connection
 }
 
 void acknowledgement_response(int sockfd) {
-    write_message(sockfd, "A\n");
+    write_message(sockfd, "A");
 }
 
 void error_response(int sockfd, int error_code) {
     char message[BUFFER_SIZE];  // Buffer to hold the error message
-    snprintf(message, sizeof(message), "E %d\n", error_code); // Format the error message, including the error code
+    snprintf(message, sizeof(message), "E %d", error_code); // Format the error message, including the error code
     write_message(sockfd, message);
 }
 
@@ -150,15 +161,20 @@ void process_begin_packet(int other_client_sockfd, int client_sockfd, int player
                 return;
             } else if (strncmp(buffer, "B", 1) == 0) { // Begin packet
                 if ((sscanf(buffer, "B %d %d", &board_width, &board_height) == 2) && (board_width >= 10) && (board_height >= 10)) {
-                    p1_board[board_width][board_height];
+                    p1_board = (int **)malloc(board_height * sizeof(int *));
+                    for (int i = 0; i < board_height; i++) {
+                        p1_board[i] = (int *)malloc(board_width * sizeof(int));
+                    }
+
+                    p2_board = (int **)malloc(board_height * sizeof(int *));
+                    for (int i = 0; i < board_height; i++) {
+                        p2_board[i] = (int *)malloc(board_width * sizeof(int));
+                    }
+
+                    // Initialize the boards
                     for (int i = 0; i < board_height; i++) {
                         for (int j = 0; j < board_width; j++) {
                             p1_board[i][j] = 0;
-                        }
-                    }
-                    p2_board[board_width][board_height];
-                    for (int i = 0; i < board_height; i++) {
-                        for (int j = 0; j < board_width; j++) {
                             p2_board[i][j] = 0;
                         }
                     }
@@ -716,6 +732,8 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
             read_message(client_sockfd, NULL, 0); // Read from the other socket without storing it
             write_message(client_sockfd, "H 1\n"); // Send a (win) Halt Packet to P2
 
+            free_board(p1_board, board_height);
+            free_board(p2_board, board_height);
             // Close the connection to the ports after sending the Halt packets
             close(client_sockfd);  // Close Player A's connection
             close(other_client_sockfd);  // Close Player B's connection
@@ -885,6 +903,8 @@ int main() {
             error_response(connect_player2, 102);
         }
     }
+
+    
     return 0;
 }
 
