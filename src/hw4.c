@@ -59,10 +59,6 @@ int create_socket(int port) {
     int sockfd; // Socket file descriptor
     struct sockaddr_in server_addr; // Holds server address + information
 
-    // AF_INET specifies address family (32-bit IPv4)
-    // SOCK_STREAM indicates that it is a TCP socket
-    // 0 is the default protocol for the given socket type
-
     //Creates a socket and checks for failure
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
        perror("Failed to create socket");
@@ -95,6 +91,17 @@ int create_socket(int port) {
     return sockfd;
 }
 
+void clear_board(int player) {
+    int ** opponent_board = (player == 1) ? (int **)p1_board : (int**)p2_board;
+    if (player == 1) {
+        for (int r = 0; r < board_height; r++) {
+            for (int c = 0; c < board_width; c++) {
+                opponent_board[r][c] = 0;
+            }
+        }
+    }
+}
+
 void free_board(int **board, int board_height) {
     if (board != NULL) {
         for (int i = 0; i < board_height; i++) {
@@ -125,15 +132,16 @@ void write_message(int sockfd, const char * message) {
 // Halt Reponse to a Forfeit Packet
 void halt_response(int sockfd, int other_sockfd) {
     char buffer[BUFFER_SIZE];
-    write_message(sockfd, "H 0"); // Send a (loss) Halt Packet to P1
-    read_message(other_sockfd, buffer, sizeof(buffer)); // Read from the other socket without storing it
-    write_message(other_sockfd, "H 1"); // Send a (win) Halt Packet to P2
+    write_message(sockfd, "H 0"); // Send a (loss) Halt Packet to the player who sent a Forfeit packet
+    read_message(other_sockfd, buffer, sizeof(buffer));
+    write_message(other_sockfd, "H 1"); // Send a (win) Halt Packet the other player
 
     free_board(p1_board, board_height);
     free_board(p2_board, board_height);
+
     // Close the connection to the ports after sending the Halt packets
-    close(sockfd);  // Close Player A's connection
-    close(other_sockfd);  // Close Player B's connection
+    close(sockfd);
+    close(other_sockfd);
 }
 
 void acknowledgement_response(int sockfd) {
@@ -155,28 +163,26 @@ int process_begin_packet(int other_client_sockfd, int client_sockfd, int player)
             int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
 
             if (strncmp(buffer, "F", 1) == 0) { // Forfeit
-                halt_response(client_sockfd, other_client_sockfd); // Send Halt response packets, close connections
+                halt_response(client_sockfd, other_client_sockfd); // Halt
                 return 0;
-            } else if (strncmp(buffer, "B", 1) == 0) { // Begin packet
+            } else if (strncmp(buffer, "B", 1) == 0) { // Begin
                 if ((sscanf(buffer, "B %d %d %d", &board_width, &board_height, &dummy) == 2) && (board_width >= 10) && (board_height >= 10)) {
                     
-                    p1_board = (int **)malloc(board_height * sizeof(int *));
+                    p1_board = (int **)malloc(board_height * sizeof(int *)); // Initialize P1's board
                     for (int i = 0; i < board_height; i++) {
                         p1_board[i] = (int *)malloc(board_width * sizeof(int));
                     }
-                    p2_board = (int **)malloc(board_height * sizeof(int *));
+                    p2_board = (int **)malloc(board_height * sizeof(int *)); // Initialize P2's board
                     for (int i = 0; i < board_height; i++) {
                         p2_board[i] = (int *)malloc(board_width * sizeof(int));
                     }
-
-                    // Initialize the boards
-                    for (int i = 0; i < board_height; i++) {
+                    for (int i = 0; i < board_height; i++) { // Set the board spaces to 0
                         for (int j = 0; j < board_width; j++) {
                             p1_board[i][j] = 0;
                             p2_board[i][j] = 0;
                         }
                     }
-                    acknowledgement_response(client_sockfd); // Acknowledge the client's message
+                    acknowledgement_response(client_sockfd); // Acknowledge
                     return 1; 
                 } else {
                     error_response(client_sockfd, 200); // Invalid Begin Packet (invalid number of parameters)
@@ -187,21 +193,16 @@ int process_begin_packet(int other_client_sockfd, int client_sockfd, int player)
         } else if (player == 2) {
             printf("Enter the Begin packet (player 2): \n");
             int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-            printf("%s", buffer);
-            if (bytes_read < 0) {
-                perror("Error reading from client."); 
-                return 0; 
-            }
 
             if (strncmp(buffer, "F", 1) == 0) { // Forfeit
-                halt_response(client_sockfd, other_client_sockfd); // Send Halt response packets, close connections
+                halt_response(client_sockfd, other_client_sockfd); // Halt
                 return 0;
             } else if (strncmp(buffer, "B", 1) == 0) {
                 if (sscanf(buffer, "B %d", &dummy) == -1) {
-                    acknowledgement_response(client_sockfd); // Acknowledge the client's message
+                    acknowledgement_response(client_sockfd); // Acknowledge
                     return 1;
                 } else {
-                    error_response(client_sockfd, 200);
+                    error_response(client_sockfd, 200); // Invalid Begin Packet (invalid number of parameters)
                 }
             } else {
                 error_response(client_sockfd, 100); // Invalid Packet Type (expected begin packet)
@@ -627,57 +628,83 @@ void place_ship(int type, int rotation, int row, int col, int ** board) {
     }
 }
 
-void process_initialize_packet(int other_client_sockfd, int client_sockfd, int player) {
+int process_initialize_packet(int other_client_sockfd, int client_sockfd, int player) {
     char buffer[BUFFER_SIZE];
-    int ship_type, ship_rotation, ship_row, ship_col;
+    int ship_type, ship_rotation, ship_row, ship_col, dummy;
     
     while (1) {
         int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-        if (bytes_read < 0) { return; }
+        int ships_placed = 0;
+
+        clear_board(player);
 
         if (strncmp(buffer, "F", 1) == 0) { // Forfeit
-            halt_response(client_sockfd, other_client_sockfd); // Send Halt response packets, close connections
-            return;
+            halt_response(client_sockfd, other_client_sockfd); // Halt
+            return 0;
         } else if (strncmp(buffer, "I", 1) == 0) {
             char * buffer_ptr = buffer + 1;
+            while (ships_placed < 5) {
+                if (ships_placed < 4) { // If we are reading ship #1 - 4
+                    if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_row, &ship_col) == 4) {
+                        
+                        buffer_ptr = buffer_ptr + 8; // Move buffer_ptr forward to read the next pieces of data
+                        printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
 
-            int ships_placed = 0;
-            while (ships_placed < 5) { // 's' for 'ship'
-                if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_row, &ship_col) == 4) {
-
-                    if (ship_type < 1 || ship_type > 7) {
-                        error_response(client_sockfd, 300); // Invalid Initialize Packet (shape out of range)
-                        break;
-                    } else if (ship_rotation < 1 || ship_rotation > 4) {
-                        error_response(client_sockfd, 301); // Invalid Initialize Packet (rotation out of range)
-                        break;
-                    } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
-                        error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
-                        break;
-                    } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
-                        error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
-                        break;
-                    } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
-                        error_response(client_sockfd, 303); // Invalid Initialize Packet (ships overlap)
-                        break;
+                        if (ship_type < 1 || ship_type > 7) {
+                            error_response(client_sockfd, 300); // Invalid Initialize Packet (shape out of range)
+                            break;
+                        } else if (ship_rotation < 1 || ship_rotation > 4) {
+                            error_response(client_sockfd, 301); // Invalid Initialize Packet (rotation out of range)
+                            break;
+                        } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
+                            error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
+                            break;
+                        } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
+                            error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
+                            break;
+                        } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
+                            error_response(client_sockfd, 303); // Invalid Initialize Packet (ships overlap)
+                            break;
+                        } else {
+                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board);
+                            ships_placed++;
+                        }
                     } else {
-                        place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board);
-                        ships_placed++;
-
-                        while (*buffer_ptr != ' ' && *buffer_ptr != '\0') {
-                            buffer_ptr++;
-                        }
-                        if (*buffer_ptr == ' ') {
-                            buffer_ptr++;
-                        }
+                        error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
+                        break;
                     }
-                } else {
-                    error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
-                    break;
+                } else { // If we are reading ship #5
+                    printf("We're here\n");
+                    if (sscanf(buffer_ptr, "%d %d %d %d %d", &ship_type, &ship_rotation, &ship_row, &ship_col, &dummy) == 4) {
+                        printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
+                        if (ship_type < 1 || ship_type > 7) {
+                            error_response(client_sockfd, 300); // Invalid Initialize Packet (shape out of range)
+                            break;
+                        } else if (ship_rotation < 1 || ship_rotation > 4) {
+                            error_response(client_sockfd, 301); // Invalid Initialize Packet (rotation out of range)
+                            break;
+                        } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
+                            error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
+                            break;
+                        } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
+                            error_response(client_sockfd, 302); // Invalid Initialize Packet (ship does not fit board)
+                            break;
+                        } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
+                            error_response(client_sockfd, 303); // Invalid Initialize Packet (ships overlap)
+                            break;
+                        } else {
+                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board);
+                            ships_placed++;
+                        }
+                    } else {
+                        printf("Womp");
+                        error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
+                        break;
+                    }
                 }
             }
-            if (ships_placed == 5) {
-                return;
+            if (ships_placed == 5) { // Ensure that we placed 5 ships. If we didn't, ask the user for another packet
+                return 1;
             }
         } else {
             error_response(client_sockfd, 101); // Invalid Packet Type (Expected initialize packet) 
@@ -770,43 +797,6 @@ void process_query_packet(int client_sockfd, int player) {
     write_message(client_sockfd, query_response);
 }
 
-// void play_game(int other_client_sockfd, int client_sockfd, int player) {
-//     char buffer[BUFFER_SIZE];
-
-//     while (1) {
-//         int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-//         if (bytes_read < 0) { return; }
-
-//         if (strncmp(buffer, "S", 1) == 0) {
-//             int shoot_row = 0;
-//             int shoot_col = 0;
-//             if (sscanf(buffer, "S %d %d", shoot_row, shoot_col) == 2) {
-//                 if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
-//                     error_response(client_sockfd, 400); // Invalid Shoot pakcet (cell not in game board)
-//                 }
-//                 process_shoot_packet(other_client_sockfd, client_sockfd, player, shoot_row, shoot_col);
-//             } else {
-//                 error_response(client_sockfd, 102);
-//             }
-//         } else if (strncmp(buffer, "Q", 1) == 0) {
-//             if (sscanf(buffer, "Q") == 0) {
-//                 process_query_packet(client_sockfd, player);
-//             } else {
-//                 error_response(client_sockfd, 102);
-//             }
-//         } else if (strncmp(buffer, "F", 1) == 0) {
-//             if (sscanf(buffer, "F") == 0) {
-//                 halt_response(client_sockfd, other_client_sockfd);
-//                 return;
-//             } else {
-//                 error_response(client_sockfd, 102);
-//             }
-//         } else {
-//             error_response(client_sockfd, 102);
-//         }
-//     }
-// }
-
 int main() {
     int player1 = create_socket(PORT1);
     int player2 = create_socket(PORT2);
@@ -839,8 +829,12 @@ int main() {
         return 0;
     }
 
-    process_initialize_packet(connect_player2, connect_player1, 1);
-    process_initialize_packet(connect_player1, connect_player2, 2);
+    if (process_initialize_packet(connect_player2, connect_player1, 1) == 0) {
+        return 0;
+    } 
+    if (process_initialize_packet(connect_player1, connect_player2, 2) == 0) {
+        return 0;
+    }
 
     char buffer[BUFFER_SIZE];
     while (1) {
