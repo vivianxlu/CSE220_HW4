@@ -107,11 +107,11 @@ void free_board(int **board, int board_height) {
 // Read a message from client => server
 int read_message(int sockfd, char * buffer, int buffer_size) {
     int bytes_read = read(sockfd, buffer, buffer_size - 1);
+    buffer[bytes_read] = '\0';
     if (bytes_read < 0) {
         perror("Failed to read message.");
         exit(1);
     }
-    buffer[bytes_read] = '\0';
     return bytes_read;
 } 
 
@@ -124,8 +124,9 @@ void write_message(int sockfd, const char * message) {
 
 // Halt Reponse to a Forfeit Packet
 void halt_response(int sockfd, int other_sockfd) {
+    char buffer[BUFFER_SIZE];
     write_message(sockfd, "H 0"); // Send a (loss) Halt Packet to P1
-    read_message(other_sockfd, NULL, 0); // Read from the other socket without storing it
+    read_message(other_sockfd, buffer, sizeof(buffer)); // Read from the other socket without storing it
     write_message(other_sockfd, "H 1"); // Send a (win) Halt Packet to P2
 
     free_board(p1_board, board_height);
@@ -145,27 +146,24 @@ void error_response(int sockfd, int error_code) {
     write_message(sockfd, message);
 }
 
-void process_begin_packet(int other_client_sockfd, int client_sockfd, int player) {
+int process_begin_packet(int other_client_sockfd, int client_sockfd, int player) {
     char buffer[BUFFER_SIZE];
+    int dummy = 0;
     while (1) {
         if (player == 1) {
             printf("Enter the Begin packet (player 1): \n");
             int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-            if (bytes_read < 0) {
-                perror("Error reading from client."); 
-                return; 
-            }
 
             if (strncmp(buffer, "F", 1) == 0) { // Forfeit
                 halt_response(client_sockfd, other_client_sockfd); // Send Halt response packets, close connections
-                return;
+                return 0;
             } else if (strncmp(buffer, "B", 1) == 0) { // Begin packet
-                if ((sscanf(buffer, "B %d %d", &board_width, &board_height) == 2) && (board_width >= 10) && (board_height >= 10)) {
+                if ((sscanf(buffer, "B %d %d %d", &board_width, &board_height, &dummy) == 2) && (board_width >= 10) && (board_height >= 10)) {
+                    
                     p1_board = (int **)malloc(board_height * sizeof(int *));
                     for (int i = 0; i < board_height; i++) {
                         p1_board[i] = (int *)malloc(board_width * sizeof(int));
                     }
-
                     p2_board = (int **)malloc(board_height * sizeof(int *));
                     for (int i = 0; i < board_height; i++) {
                         p2_board[i] = (int *)malloc(board_width * sizeof(int));
@@ -179,7 +177,7 @@ void process_begin_packet(int other_client_sockfd, int client_sockfd, int player
                         }
                     }
                     acknowledgement_response(client_sockfd); // Acknowledge the client's message
-                    return; 
+                    return 1; 
                 } else {
                     error_response(client_sockfd, 200); // Invalid Begin Packet (invalid number of parameters)
                 }
@@ -188,16 +186,23 @@ void process_begin_packet(int other_client_sockfd, int client_sockfd, int player
             }
         } else if (player == 2) {
             printf("Enter the Begin packet (player 2): \n");
-            if (read_message(client_sockfd, buffer, sizeof(buffer)) < 0) { 
+            int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
+            printf("%s", buffer);
+            if (bytes_read < 0) {
                 perror("Error reading from client."); 
+                return 0; 
             }
 
             if (strncmp(buffer, "F", 1) == 0) { // Forfeit
                 halt_response(client_sockfd, other_client_sockfd); // Send Halt response packets, close connections
-                return;
+                return 0;
             } else if (strncmp(buffer, "B", 1) == 0) {
-                acknowledgement_response(client_sockfd); // Acknowledge the client's message
-                return; 
+                if (sscanf(buffer, "B %d", &dummy) == -1) {
+                    acknowledgement_response(client_sockfd); // Acknowledge the client's message
+                    return 1;
+                } else {
+                    error_response(client_sockfd, 200);
+                }
             } else {
                 error_response(client_sockfd, 100); // Invalid Packet Type (expected begin packet)
             }
@@ -827,8 +832,12 @@ int main() {
         printf("Player 2 connected\n");
     }
 
-    process_begin_packet(connect_player2, connect_player1, 1);
-    process_begin_packet(connect_player1, connect_player2, 2);
+    if (process_begin_packet(connect_player2, connect_player1, 1) == 0) {
+        return 0;
+    }
+    if (process_begin_packet(connect_player1, connect_player2, 2) == 0) {
+        return 0;
+    }
 
     process_initialize_packet(connect_player2, connect_player1, 1);
     process_initialize_packet(connect_player1, connect_player2, 2);
