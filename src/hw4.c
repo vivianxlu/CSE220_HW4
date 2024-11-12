@@ -704,6 +704,7 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
                 }
             }
             if (ships_placed == 5) { // Ensure that we placed 5 ships. If we didn't, ask the user for another packet
+                acknowledgement_response(client_sockfd); // Acknowledge
                 return 1;
             }
         } else {
