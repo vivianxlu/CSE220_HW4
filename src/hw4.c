@@ -844,7 +844,7 @@ int main() {
         if (strncmp(buffer, "S", 1) == 0) {
             int shoot_row = 0;
             int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d", shoot_row, shoot_col) == 2) {
+            if (sscanf(buffer, "S %d %d", &shoot_row, &shoot_col) == 2) {
                 if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                     error_response(connect_player1, 400); // Invalid Shoot pakcet (cell not in game board)
                 } else {
@@ -878,7 +878,7 @@ int main() {
         if (strncmp(buffer, "S", 1) == 0) {
             int shoot_row = 0;
             int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d", shoot_row, shoot_col) == 2) {
+            if (sscanf(buffer, "S %d %d", &shoot_row, &shoot_col) == 2) {
                 if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                     error_response(connect_player2, 400); // Invalid Shoot pakcet (cell not in game board)
                 } else {
