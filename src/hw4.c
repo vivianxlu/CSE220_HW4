@@ -227,8 +227,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
             if (col < 0 || col >= board_width) {
                 within_border = false;
             }
-        }
-        if (rotation == 2 || rotation == 4) {
+        } else {
             if (row < 0 || row >= board_height) {
                 within_border = false;
             }
@@ -250,8 +249,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 2 || rotation == 4) {
+        } else {
             for (int r = row; r <= row + 2; r++) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
@@ -275,8 +273,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 2) {
+        } else if (rotation == 2) {
             for (int r = row; r <= row + 1; r++) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
@@ -287,8 +284,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 4) {
+        } else {
             for (int r = row; r >= row - 1; r--) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
@@ -307,13 +303,12 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-            for (int c = col; c <= col + 1; c++) {
+            for (int c = col; c <= col + 2; c++) {
                 if (c < 0 || c >= board_width) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 2 || rotation == 4) {
+        } else {
             for (int r = row - 1; r <= row + 1; r++) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
@@ -337,8 +332,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 1) {
+        } else if (rotation == 1) {
             for (int r = row; r >= row - 2; r--) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
@@ -349,8 +343,7 @@ bool check_within_border(int type, int rotation, int row, int col) {
                     within_border = false;
                 }
             }
-        }
-        if (rotation == 3) {
+        } else {
             for (int r = row; r <= row + 2; r++) {
                 if (r < 0 || r >= board_height) {
                     within_border = false;
