@@ -623,11 +623,10 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
     int ship_type, ship_rotation, ship_row, ship_col, dummy;
     
     while (1) {
-        int min_error = 400;
-        int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-
         clear_board(player);
         int ships_placed = 0;
+        int min_error = 400;
+        int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
 
         if (strncmp(buffer, "F", 1) == 0) { // Forfeit
             halt_response(client_sockfd, other_client_sockfd); // Halt
