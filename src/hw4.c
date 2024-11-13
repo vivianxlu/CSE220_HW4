@@ -719,13 +719,6 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
     int state = opponent_board[row][col];
     int ships_cleared = false; // Check if the last ship is gone
     int ship_remains = false; // Check if there are still parts of the current ship left
-    
-    for (int r = 0; r < board_height; r++) { // Check if a part of the ship remains
-            for (int c = 0; c < board_width; c++) {
-                printf("%d ", opponent_board[r][c]);
-            }
-            printf("\n");
-        }
 
     if (state == MISS || state == HIT) {
         error_response(client_sockfd, 401);
