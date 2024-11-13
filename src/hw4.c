@@ -856,65 +856,70 @@ int main() {
     int dummy = 0;
 
     while (1) {
-        int bytes_read = read_message(connect_player1, buffer, sizeof(buffer));
+        while (1) {
+            int bytes_read = read_message(connect_player1, buffer, sizeof(buffer));
 
-        if (strncmp(buffer, "S", 1) == 0) {
-            int shoot_row = 0;
-            int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
-                if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
-                    error_response(connect_player1, 400); // Invalid Shoot pakcet (cell not in game board)
-                } else {
-                    if (process_shoot_packet(connect_player2, connect_player1, 1, shoot_row, shoot_col)) {
-                        return 0;
+            if (strncmp(buffer, "S", 1) == 0) {
+                int shoot_row = 0;
+                int shoot_col = 0;
+                if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
+                    if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
+                        error_response(connect_player1, 400); // Invalid Shoot pakcet (cell not in game board)
+                    } else {
+                        if (process_shoot_packet(connect_player2, connect_player1, 1, shoot_row, shoot_col)) {
+                            return 0;
+                        }
                     }
+                } else {
+                    error_response(connect_player1, 102);
                 }
+            } else if (strncmp(buffer, "Q", 1) == 0) {
+                if (sscanf(buffer, "Q") == 0) {
+                    process_query_packet(connect_player1, 1);
+                } else {
+                    error_response(connect_player1, 102);
+                }
+            } else if (strncmp(buffer, "F", 1) == 0) {
+                halt_response(connect_player1, connect_player2);
+                return 0;
             } else {
                 error_response(connect_player1, 102);
             }
-        } else if (strncmp(buffer, "Q", 1) == 0) {
-            if (sscanf(buffer, "Q") == 0) {
-                process_query_packet(connect_player1, 1);
-            } else {
-                error_response(connect_player1, 102);
-            }
-        } else if (strncmp(buffer, "F", 1) == 0) {
-            halt_response(connect_player1, connect_player2);
-            return 0;
-        } else {
-            error_response(connect_player1, 102);
         }
+        
+        while (1) {
+            int bytes_read = read_message(connect_player2, buffer, sizeof(buffer));
+            if (bytes_read < 0) { return -1; }
 
-        bytes_read = read_message(connect_player2, buffer, sizeof(buffer));
-        if (bytes_read < 0) { return -1; }
-
-        if (strncmp(buffer, "S", 1) == 0) {
-            int shoot_row = 0;
-            int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
-                if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
-                    error_response(connect_player2, 400); // Invalid Shoot pakcet (cell not in game board)
-                } else {
-                    if (process_shoot_packet(connect_player1, connect_player2, 2, shoot_row, shoot_col)) {
-                        return 0;
+            if (strncmp(buffer, "S", 1) == 0) {
+                int shoot_row = 0;
+                int shoot_col = 0;
+                if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
+                    if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
+                        error_response(connect_player2, 400); // Invalid Shoot pakcet (cell not in game board)
+                    } else {
+                        if (process_shoot_packet(connect_player1, connect_player2, 2, shoot_row, shoot_col)) {
+                            return 0;
+                        }
                     }
+                } else {
+                    error_response(connect_player2, 102);
                 }
+            } else if (strncmp(buffer, "Q", 1) == 0) {
+                if (sscanf(buffer, "Q") == 0) {
+                    process_query_packet(connect_player2, 2);
+                } else {
+                    error_response(connect_player2, 102);
+                }
+            } else if (strncmp(buffer, "F", 1) == 0) {
+                halt_response(connect_player2, connect_player1);
+                return 0;
             } else {
                 error_response(connect_player2, 102);
             }
-        } else if (strncmp(buffer, "Q", 1) == 0) {
-            if (sscanf(buffer, "Q") == 0) {
-                process_query_packet(connect_player2, 2);
-            } else {
-                error_response(connect_player2, 102);
-            }
-        } else if (strncmp(buffer, "F", 1) == 0) {
-            halt_response(connect_player2, connect_player1);
-            return 0;
-        } else {
-            error_response(connect_player2, 102);
         }
     }
+        
     return 0;
 }
 
