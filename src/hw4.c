@@ -721,11 +721,6 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
     int state = opponent_board[row][col];
     int ships_cleared = false; // Check if the last ship is gone
     int ship_remains = false; // Check if there are still parts of the current ship left
-
-    if (state == MISS || state == HIT) {
-        error_response(client_sockfd, 401);
-        return false;
-    }
     
     char shot_response[BUFFER_SIZE]; 
 
@@ -860,7 +855,9 @@ int main() {
                 if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
                     if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                         error_response(connect_player1, 400); // Invalid Shoot pakcet (cell not in game board)
-                    } else {
+                    } else if (p2_board[shoot_row][shoot_col] == HIT || p2_board[shoot_row][shoot_col] == MISS) {
+                        error_response(connect_player1, 401);
+                    }else {
                         if (process_shoot_packet(connect_player2, connect_player1, 1, shoot_row, shoot_col)) {
                             return 0;
                         }
@@ -893,7 +890,9 @@ int main() {
                 if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
                     if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                         error_response(connect_player2, 400); // Invalid Shoot pakcet (cell not in game board)
-                    } else {
+                    } else if (p1_board[shoot_row][shoot_col] == HIT || p1_board[shoot_row][shoot_col] == MISS) {
+                        error_response(connect_player2, 401);
+                    }else {
                         if (process_shoot_packet(connect_player1, connect_player2, 2, shoot_row, shoot_col)) {
                             return 0;
                         }
