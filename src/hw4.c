@@ -871,7 +871,7 @@ int main() {
                         }
                     }
                 } else {
-                    error_response(connect_player1, 102);
+                    error_response(connect_player1, 202);
                 }
             } else if (strncmp(buffer, "Q", 1) == 0) {
                 if (sscanf(buffer, "Q") == 0) {
@@ -903,7 +903,7 @@ int main() {
                         }
                     }
                 } else {
-                    error_response(connect_player2, 102);
+                    error_response(connect_player2, 202);
                 }
             } else if (strncmp(buffer, "Q", 1) == 0) {
                 if (sscanf(buffer, "Q") == 0) {
