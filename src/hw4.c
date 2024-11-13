@@ -699,7 +699,7 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
                 } 
             } else {
                 error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
-                break;
+                continue;
             }
             
             if (minimum_error != 400) {
