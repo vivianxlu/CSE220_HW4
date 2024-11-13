@@ -869,6 +869,7 @@ int main() {
                         if (process_shoot_packet(connect_player2, connect_player1, 1, shoot_row, shoot_col)) {
                             return 0;
                         }
+                        break;
                     }
                 } else {
                     error_response(connect_player1, 202);
@@ -876,6 +877,7 @@ int main() {
             } else if (strncmp(buffer, "Q", 1) == 0) {
                 if (sscanf(buffer, "Q") == 0) {
                     process_query_packet(connect_player1, 1);
+                    break;
                 } else {
                     error_response(connect_player1, 102);
                 }
@@ -901,6 +903,7 @@ int main() {
                         if (process_shoot_packet(connect_player1, connect_player2, 2, shoot_row, shoot_col)) {
                             return 0;
                         }
+                        break;
                     }
                 } else {
                     error_response(connect_player2, 202);
@@ -908,6 +911,7 @@ int main() {
             } else if (strncmp(buffer, "Q", 1) == 0) {
                 if (sscanf(buffer, "Q") == 0) {
                     process_query_packet(connect_player2, 2);
+                    break;
                 } else {
                     error_response(connect_player2, 102);
                 }
