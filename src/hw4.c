@@ -93,11 +93,9 @@ int create_socket(int port) {
 
 void clear_board(int player) {
     int ** opponent_board = (player == 1) ? (int **)p1_board : (int**)p2_board;
-    if (player == 1) {
-        for (int r = 0; r < board_height; r++) {
-            for (int c = 0; c < board_width; c++) {
-                opponent_board[r][c] = 0;
-            }
+    for (int r = 0; r < board_height; r++) {
+        for (int c = 0; c < board_width; c++) {
+            opponent_board[r][c] = 0;
         }
     }
 }
