@@ -794,11 +794,11 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
 }
 
 void process_query_packet(int client_sockfd, int player) {
-    int ** opponent_board = (player == 1) ? (int **)p2_board: (int **)p1_board;
+    int ** opponent_board = (player == 1) ? (int **)p2_board : (int **)p1_board;
     int opponent_ships_remaining = (player == 1) ? p2_ships_remaining : p1_ships_remaining;
     int state = 0;
     
-    char query_response[BUFFER_SIZE] = {0};
+    char query_response[BUFFER_SIZE];
     snprintf(query_response, sizeof(query_response), "G %d", opponent_ships_remaining);
 
     for (int r = 0; r < board_height; r++) {
