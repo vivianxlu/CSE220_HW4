@@ -620,98 +620,188 @@ void place_ship(int type, int rotation, int row, int col, int ** board, int ship
 
 int process_initialize_packet(int other_client_sockfd, int client_sockfd, int player) {
     char buffer[BUFFER_SIZE];
-    int ship_type, ship_rotation, ship_row, ship_col, dummy;
+    int ship_type1, ship_rotation1, ship_row1, ship_col1; // Ship 1
+    int ship_type2, ship_rotation2, ship_row2, ship_col2; // Ship 2
+    int ship_type3, ship_rotation3, ship_row3, ship_col3; // Ship 3
+    int ship_type4, ship_rotation4, ship_row4, ship_col4; // Ship 4
+    int ship_type5, ship_rotation5, ship_row5, ship_col5; // Ship 5
+    int dummy;
     
     while (1) {
-        clear_board(player);
+        clear_board(player); // Clear the board before we take in a new client input
         int ships_placed = 0;
-        int min_error = 400;
+        int minimum_error = 400;
         int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
 
         if (strncmp(buffer, "F", 1) == 0) { // Forfeit
             halt_response(client_sockfd, other_client_sockfd); // Halt
-            return 0;
+            return 0; // 0 = End Game, Exit Main()
         } else if (strncmp(buffer, "I", 1) == 0) {
             char * buffer_ptr = buffer + 1;
-            
-            while (ships_placed < 5) {
-                if (ships_placed < 4) { // If we are reading ship #1 - 4
-                    if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row) == 4) {
-                        
-                        buffer_ptr = buffer_ptr + 8; // Move buffer_ptr forward to read the next pieces of data
-                        printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
 
-                        int error_code = 0;
+            if (sscanf(buffer_ptr, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", // Check if there are 20 arguments, following "I"
+            &ship_type1, &ship_rotation1, &ship_row1, &ship_col1,
+            &ship_type2, &ship_rotation2, &ship_row2, &ship_col2,
+            &ship_type3, &ship_rotation3, &ship_row3, &ship_col3,
+            &ship_type4, &ship_rotation4, &ship_row4, &ship_col4,
+            &ship_type5, &ship_rotation5, &ship_row5, &ship_col5,
+            &dummy) == 20) {
 
-                        if (ship_type < 1 || ship_type > 7) {
-                            error_code = 300;
-                        } else if (ship_rotation < 1 || ship_rotation > 4) {
-                            error_code = 301;
-                        } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
-                            error_code = 302;
-                        } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
-                            error_code = 302;
-                        } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
-                            error_code = 303;
-                        } 
+                for (int i = 0; i < 5; i++) { // If there are 20 arguments, loop through each data set for each ship
+                    int type, rotation, row, col;
+                    int error_code = 0;
 
-                        if (error_code != 0) {
-                            min_error = (error_code < min_error) ? error_code : min_error;
-                            ships_placed++;
-                        } else {
-                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
-                            ships_placed++;
-                        }
-
-                    } else {
-                        error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
-                        break;
+                    if (i == 0) {
+                        type = ship_type1;
+                        rotation = ship_rotation1;
+                        row = ship_row1;
+                        col = ship_col1;
+                    } else if (i == 1) {
+                        type = ship_type2;
+                        rotation = ship_rotation2;
+                        row = ship_row2;
+                        col = ship_col2;
+                    } else if (i == 2) {
+                        type = ship_type3;
+                        rotation = ship_rotation3;
+                        row = ship_row3;
+                        col = ship_col3;
+                    } else if (i == 3) {
+                        type = ship_type4;
+                        rotation = ship_rotation4;
+                        row = ship_row4;
+                        col = ship_col4;
+                    } else if (i == 4) {
+                        type = ship_type5;
+                        rotation = ship_rotation5;
+                        row = ship_row5;
+                        col = ship_col5;
                     }
-                } else if (ships_placed == 4){ // If we are reading ship #5
-                    printf("We're here\n");
-                    if (sscanf(buffer_ptr, "%d %d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row, &dummy) == 4) {
-                        printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
 
-                        int error_code = 0;
+                    // Check for errors
+                    if (type < 1 || type > 7) { 
+                        error_code = 300;
+                    } else if (rotation < 1 || rotation > 4) {
+                        error_code = 301;
+                    } else if (row < 0 || row >= board_height || col < 0 ||col >= board_width){
+                        error_code = 302;
+                    } else if (!check_within_border(type, rotation, row, col)) {
+                        error_code = 302;
+                    } else if (!check_no_overlap(type, rotation, row, col, (player == 1) ? p1_board : p2_board)) {
+                        error_code = 303;
+                    } 
 
-                        if (ship_type < 1 || ship_type > 7) {
-                            error_code = 300;
-                        } else if (ship_rotation < 1 || ship_rotation > 4) {
-                            error_code = 301;
-                        } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
-                            error_code = 302;
-                        } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
-                            error_code = 302;
-                        } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
-                            error_code = 303;
-                        }
-
-                        if (error_code != 0) {
-                            min_error = (error_code < min_error) ? error_code : min_error;
-                            ships_placed++;
-                        } else {
-                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
-                            ships_placed++;
-                        }
+                    if (error_code != 0) {
+                        minimum_error = (error_code < minimum_error) ? error_code : minimum_error;
                     } else {
-                        printf("Womp");
-                        error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
-                        break;
+                        place_ship(type, rotation, row, col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
                     }
-                }
+                } 
+            } else {
+                error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
+                break;
             }
-            if (ships_placed == 5) { // Ensure that we placed 5 ships. If we didn't, ask the user for another packet
-                if (min_error != 400) {
-                    error_response(client_sockfd, min_error);
-                } else {
-                    acknowledgement_response(client_sockfd); // Acknowledge
-                    return 1;
-                }
+            
+            if (minimum_error != 400) {
+                error_response(client_sockfd, minimum_error);
+            } else {
+                acknowledgement_response(client_sockfd); // Acknowledge
+                return 1;
             }
         } else {
-            error_response(client_sockfd, 101); // Invalid Packet Type (Expected initialize packet) 
+            error_response(client_sockfd, 101); // Invalid Packet Type (Expected initialize packet)
         }
     }
+    // while (1) {
+    //     clear_board(player);
+    //     int ships_placed = 0;
+    //     int min_error = 400;
+    //     int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
+
+    //     if (strncmp(buffer, "F", 1) == 0) { // Forfeit
+    //         halt_response(client_sockfd, other_client_sockfd); // Halt
+    //         return 0;
+    //     } else if (strncmp(buffer, "I", 1) == 0) {
+    //         char * buffer_ptr = buffer + 1;
+            
+    //         while (ships_placed < 5) {
+    //             if (ships_placed < 4) { // If we are reading ship #1 - 4
+    //                 if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row) == 4) {
+                        
+    //                     buffer_ptr = buffer_ptr + 8; // Move buffer_ptr forward to read the next pieces of data
+    //                     printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
+
+    //                     int error_code = 0;
+
+    //                     if (ship_type < 1 || ship_type > 7) {
+    //                         error_code = 300;
+    //                     } else if (ship_rotation < 1 || ship_rotation > 4) {
+    //                         error_code = 301;
+    //                     } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
+    //                         error_code = 302;
+    //                     } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
+    //                         error_code = 302;
+    //                     } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
+    //                         error_code = 303;
+    //                     } 
+
+    //                     if (error_code != 0) {
+    //                         min_error = (error_code < min_error) ? error_code : min_error;
+    //                         ships_placed++;
+    //                     } else {
+    //                         place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
+    //                         ships_placed++;
+    //                     }
+
+    //                 } else {
+    //                     error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
+    //                     break;
+    //                 }
+    //             } else if (ships_placed == 4){ // If we are reading ship #5
+    //                 printf("We're here\n");
+    //                 if (sscanf(buffer_ptr, "%d %d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row, &dummy) == 4) {
+    //                     printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
+
+    //                     int error_code = 0;
+
+    //                     if (ship_type < 1 || ship_type > 7) {
+    //                         error_code = 300;
+    //                     } else if (ship_rotation < 1 || ship_rotation > 4) {
+    //                         error_code = 301;
+    //                     } else if (ship_row < 0 || ship_row >= board_height || ship_col < 0 ||ship_col >= board_width){
+    //                         error_code = 302;
+    //                     } else if (!check_within_border(ship_type, ship_rotation, ship_row, ship_col)) {
+    //                         error_code = 302;
+    //                     } else if (!check_no_overlap(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board)) {
+    //                         error_code = 303;
+    //                     }
+
+    //                     if (error_code != 0) {
+    //                         min_error = (error_code < min_error) ? error_code : min_error;
+    //                         ships_placed++;
+    //                     } else {
+    //                         place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
+    //                         ships_placed++;
+    //                     }
+    //                 } else {
+    //                     printf("Womp");
+    //                     error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //         if (ships_placed == 5) { // Ensure that we placed 5 ships. If we didn't, ask the user for another packet
+    //             if (min_error != 400) {
+    //                 error_response(client_sockfd, min_error);
+    //             } else {
+    //                 acknowledgement_response(client_sockfd); // Acknowledge
+    //                 return 1;
+    //             }
+    //         }
+    //     } else {
+    //         error_response(client_sockfd, 101); // Invalid Packet Type (Expected initialize packet) 
+    //     }
+    // }
 }
 
 bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player, int row, int col) {
