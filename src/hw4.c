@@ -18,7 +18,7 @@ typedef struct {
     int rotation;
     int row;
     int col;
-} Ship ;
+} Ship;
 
 // W x H, Initialized by P1
 int board_width = 0;
@@ -517,113 +517,113 @@ bool check_no_overlap(int type, int rotation, int row, int col, int ** board) {
     return no_overlap;
 }
 
-void place_ship(int type, int rotation, int row, int col, int ** board) {
+void place_ship(int type, int rotation, int row, int col, int ** board, int ship) {
     if (type == 1) {
-        board[row][col] = 1;
-        board[row][col+1] = 1;
-        board[row+1][col] = 1;
-        board[row+1][col+1] = 1;
+        board[row][col] = ship;
+        board[row][col+1] = ship;
+        board[row+1][col] = ship;
+        board[row+1][col+1] = ship;
     } else if (type == 2) {
         if (rotation == 1 || rotation == 3) {
-            board[row][col] = 2;
-            board[row+1][col] = 2;
-            board[row+2][col] = 2;
-            board[row+3][col] = 2;
+            board[row][col] = ship;
+            board[row+1][col] = ship;
+            board[row+2][col] = ship;
+            board[row+3][col] = ship;
         } else {
-            board[row][col] = 2;
-            board[row][col+1] = 2;
-            board[row][col+2] = 2;
-            board[row][col+3] = 2;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
+            board[row][col+3] = ship;
         }
     } else if (type == 3) {
         if (rotation == 1 || rotation == 3) {
-            board[row][col] = 3;
-            board[row][col+1] = 3;
-            board[row-1][col+1] = 3;
-            board[row-1][col+2] = 3;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row-1][col+1] = ship;
+            board[row-1][col+2] = ship;
         } else {
-            board[row][col] = 3;
-            board[row+1][col] = 3;
-            board[row+1][col+1] = 3;
-            board[row+2][col+1] = 3;
+            board[row][col] = ship;
+            board[row+1][col] = ship;
+            board[row+1][col+1] = ship;
+            board[row+2][col+1] = ship;
         }
     } else if (type == 4) {
         if (rotation == 1) {
-            board[row][col] = 4;
-            board[row+1][col] = 4;
-            board[row+2][col] = 4;
-            board[row+2][col+1] = 4;
+            board[row][col] = ship;
+            board[row+1][col] = ship;
+            board[row+2][col] = ship;
+            board[row+2][col+1] = ship;
         } else if (rotation == 2) {
-            board[row][col] = 4;
-            board[row][col+1] = 4;
-            board[row][col+2] = 4;
-            board[row+1][col] = 4;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
+            board[row+1][col] = ship;
         } else if (rotation == 3) {
-            board[row][col] = 4;
-            board[row][col+1] = 4;
-            board[row+1][col+2] = 4;
-            board[row+2][col] = 4;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row+1][col+2] = ship;
+            board[row+2][col] = ship;
         } else {
-            board[row][col] = 4;
-            board[row][col+1] = 4;
-            board[row][col+2] = 4;
-            board[row-1][col+2] = 4;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
+            board[row-1][col+2] = ship;
         }
     } else if (type == 5) {
         if (rotation == 1 || rotation == 3) {
-            board[row][col] = 5;
-            board[row][col+1] = 5;
-            board[row+1][col+1] = 5;
-            board[row+1][col+2] = 5;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row+1][col+1] = ship;
+            board[row+1][col+2] = ship;
         } else {
-            board[row][col] = 5;
-            board[row][col+1] = 5;
-            board[row-1][col+1] = 5;
-            board[row+1][col] = 5;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row-1][col+1] = ship;
+            board[row+1][col] = ship;
         }
     } else if (type == 6) {
         if (rotation == 1) {
-            board[row][col] = 6;
-            board[row][col+1] = 6;
-            board[row-1][col+1] = 6;
-            board[row-2][col+1] = 6;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row-1][col+1] = ship;
+            board[row-2][col+1] = ship;
         } else if (rotation == 2) {
-            board[row][col] = 6;
-            board[row+1][col] = 6;
-            board[row+1][col+1] = 6;
-            board[row+1][col+2] = 6;
+            board[row][col] = ship;
+            board[row+1][col] = ship;
+            board[row+1][col+1] = ship;
+            board[row+1][col+2] = ship;
         } else if (rotation == 3) {
-            board[row][col] = 6;
-            board[row][col+1] = 6;
-            board[row+1][col] = 6;
-            board[row+2][col] = 6;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row+1][col] = ship;
+            board[row+2][col] = ship;
         } else {
-            board[row][col] = 6;
-            board[row][col+1] = 6;
-            board[row][col+2] = 6;
-            board[row+1][col+2] = 6;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
+            board[row+1][col+2] = ship;
         }
     } else {
         if (rotation == 1) {
-            board[row][col] = 7;
-            board[row][col+1] = 7;
-            board[row][col+2] = 7;
-            board[row+1][col+1] = 7;
+            board[row][col] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
+            board[row+1][col+1] = ship;
         } else if (rotation == 2) {
-            board[row][col] = 7;
-            board[row-1][col+1] = 7;
-            board[row][col+1] = 7;
-            board[row+1][col+1] = 7;
+            board[row][col] = ship;
+            board[row-1][col+1] = ship;
+            board[row][col+1] = ship;
+            board[row+1][col+1] = ship;
         } else if (rotation == 3) {
-            board[row][col] = 7;
-            board[row-1][col+1] = 7;
-            board[row][col+1] = 7;
-            board[row][col+2] = 7;
+            board[row][col] = ship;
+            board[row-1][col+1] = ship;
+            board[row][col+1] = ship;
+            board[row][col+2] = ship;
         } else {
-            board[row][col] = 7;
-            board[row+1][col] = 7;
-            board[row+2][col] = 7;
-            board[row+1][col+1] = 7;
+            board[row][col] = ship;
+            board[row+1][col] = ship;
+            board[row+2][col] = ship;
+            board[row+1][col+1] = ship;
         }
     }
 }
@@ -634,9 +634,9 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
     
     while (1) {
         int bytes_read = read_message(client_sockfd, buffer, sizeof(buffer));
-        int ships_placed = 0;
 
         clear_board(player);
+        int ships_placed = 0;
 
         if (strncmp(buffer, "F", 1) == 0) { // Forfeit
             halt_response(client_sockfd, other_client_sockfd); // Halt
@@ -645,7 +645,7 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
             char * buffer_ptr = buffer + 1;
             while (ships_placed < 5) {
                 if (ships_placed < 4) { // If we are reading ship #1 - 4
-                    if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_row, &ship_col) == 4) {
+                    if (sscanf(buffer_ptr, "%d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row) == 4) {
                         
                         buffer_ptr = buffer_ptr + 8; // Move buffer_ptr forward to read the next pieces of data
                         printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
@@ -666,16 +666,16 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
                             error_response(client_sockfd, 303); // Invalid Initialize Packet (ships overlap)
                             break;
                         } else {
-                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board);
+                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
                             ships_placed++;
                         }
                     } else {
                         error_response(client_sockfd, 201); // Invalid Initialize Packet (invalid parameters)
                         break;
                     }
-                } else { // If we are reading ship #5
+                } else if (ships_placed == 4){ // If we are reading ship #5
                     printf("We're here\n");
-                    if (sscanf(buffer_ptr, "%d %d %d %d %d", &ship_type, &ship_rotation, &ship_row, &ship_col, &dummy) == 4) {
+                    if (sscanf(buffer_ptr, "%d %d %d %d %d", &ship_type, &ship_rotation, &ship_col, &ship_row, &dummy) == 4) {
                         printf("%d %d %d %d\n", ship_type, ship_rotation, ship_row, ship_col);
                         if (ship_type < 1 || ship_type > 7) {
                             error_response(client_sockfd, 300); // Invalid Initialize Packet (shape out of range)
@@ -693,7 +693,7 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
                             error_response(client_sockfd, 303); // Invalid Initialize Packet (ships overlap)
                             break;
                         } else {
-                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board);
+                            place_ship(ship_type, ship_rotation, ship_row, ship_col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
                             ships_placed++;
                         }
                     } else {
@@ -704,6 +704,7 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
                 }
             }
             if (ships_placed == 5) { // Ensure that we placed 5 ships. If we didn't, ask the user for another packet
+
                 acknowledgement_response(client_sockfd); // Acknowledge
                 return 1;
             }
@@ -718,9 +719,16 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
     int * opponent_ships_remaining = (player == 1) ? &p2_ships_remaining : &p1_ships_remaining;
     
     int state = opponent_board[row][col];
-    int ships_remain = false; // Check if the last ship is gone
+    int ships_cleared = false; // Check if the last ship is gone
     int ship_remains = false; // Check if there are still parts of the current ship left
     
+    for (int r = 0; r < board_height; r++) { // Check if a part of the ship remains
+            for (int c = 0; c < board_width; c++) {
+                printf("%d ", opponent_board[r][c]);
+            }
+            printf("\n");
+        }
+
     if (state == MISS || state == HIT) {
         error_response(client_sockfd, 401);
         return false;
@@ -738,32 +746,41 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
 
         for (int r = 0; r < board_height; r++) { // Check if a part of the ship remains
             for (int c = 0; c < board_width; c++) {
+                printf("%d ", opponent_board[r][c]);
+            }
+            printf("\n");
+        }
+
+        for (int r = 0; r < board_height; r++) { // Check if a part of the ship remains
+            for (int c = 0; c < board_width; c++) {
                 if (opponent_board[r][c] == state) {
                     ship_remains = true;
                     break;
                 }
             }
         }
+        printf("Ships remaining%d\n", *opponent_ships_remaining);
         if (!ship_remains) { // If no parts of the ship remain, decrement the remaining ships count
-            
-            *opponent_ships_remaining = *opponent_ships_remaining - 1;
-        }
+            *opponent_ships_remaining -= 1;
+            printf("Ships remaining %d\n", *opponent_ships_remaining);
+        } 
 
         for (int r = 0; r < board_height; r++) { // Check if ships still remain
             for (int c = 0; c < board_width; c++) {
                 if (opponent_board[r][c] != 0 && opponent_board[r][c] != -1 && opponent_board[r][c] != -2) {
-                    ships_remain = true;
+                    ships_cleared = true;
                     break;
                 }
             }
         }
-        if (!ships_remain) {
+        char buffer[BUFFER_SIZE];
+        if (!ships_cleared) {
             snprintf(shot_response, sizeof(shot_response), "R %d H", *opponent_ships_remaining); // Format the shot_response
             write_message(client_sockfd, shot_response);
-            read_message(other_client_sockfd, NULL, 0); // Read from the other socket without storing it
-            write_message(other_client_sockfd, "H 0\n"); // Send a (loss) Halt Packet to P1
-            read_message(client_sockfd, NULL, 0); // Read from the other socket without storing it
-            write_message(client_sockfd, "H 1\n"); // Send a (win) Halt Packet to P2
+            read_message(other_client_sockfd, buffer, sizeof(buffer)); // Read from the other socket without storing it
+            write_message(other_client_sockfd, "H 0"); // Send a (loss) Halt Packet to P1
+            read_message(client_sockfd, buffer, sizeof(buffer)); // Read from the other socket without storing it
+            write_message(client_sockfd, "H 1"); // Send a (win) Halt Packet to P2
 
             free_board(p1_board, board_height);
             free_board(p2_board, board_height);
@@ -838,14 +855,15 @@ int main() {
     }
 
     char buffer[BUFFER_SIZE];
+    int dummy = 0;
+
     while (1) {
         int bytes_read = read_message(connect_player1, buffer, sizeof(buffer));
-        if (bytes_read < 0) { return -1; }
 
         if (strncmp(buffer, "S", 1) == 0) {
             int shoot_row = 0;
             int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d", &shoot_row, &shoot_col) == 2) {
+            if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
                 if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                     error_response(connect_player1, 400); // Invalid Shoot pakcet (cell not in game board)
                 } else {
@@ -863,12 +881,8 @@ int main() {
                 error_response(connect_player1, 102);
             }
         } else if (strncmp(buffer, "F", 1) == 0) {
-            if (sscanf(buffer, "F") == 0) {
-                halt_response(connect_player1, connect_player2);
-                return 0;
-            } else {
-                error_response(connect_player1, 102);
-            }
+            halt_response(connect_player1, connect_player2);
+            return 0;
         } else {
             error_response(connect_player1, 102);
         }
@@ -879,7 +893,7 @@ int main() {
         if (strncmp(buffer, "S", 1) == 0) {
             int shoot_row = 0;
             int shoot_col = 0;
-            if (sscanf(buffer, "S %d %d", &shoot_row, &shoot_col) == 2) {
+            if (sscanf(buffer, "S %d %d %d", &shoot_row, &shoot_col, &dummy) == 2) {
                 if (shoot_row < 0 || shoot_row >= board_height || shoot_col < 0 || shoot_col >= board_width) {
                     error_response(connect_player2, 400); // Invalid Shoot pakcet (cell not in game board)
                 } else {
@@ -897,18 +911,12 @@ int main() {
                 error_response(connect_player2, 102);
             }
         } else if (strncmp(buffer, "F", 1) == 0) {
-            if (sscanf(buffer, "F") == 0) {
-                halt_response(connect_player2, connect_player1);
-                return 0;
-            } else {
-                error_response(connect_player2, 102);
-            }
+            halt_response(connect_player2, connect_player1);
+            return 0;
         } else {
             error_response(connect_player2, 102);
         }
     }
-
-    
     return 0;
 }
 
