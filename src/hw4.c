@@ -640,11 +640,11 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
             char * buffer_ptr = buffer + 1;
 
             if (sscanf(buffer_ptr, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", // Check if there are 20 arguments, following "I"
-            &ship_type1, &ship_rotation1, &ship_row1, &ship_col1,
-            &ship_type2, &ship_rotation2, &ship_row2, &ship_col2,
-            &ship_type3, &ship_rotation3, &ship_row3, &ship_col3,
-            &ship_type4, &ship_rotation4, &ship_row4, &ship_col4,
-            &ship_type5, &ship_rotation5, &ship_row5, &ship_col5,
+            &ship_type1, &ship_rotation1, &ship_col1, &ship_row1,
+            &ship_type2, &ship_rotation2, &ship_col2, &ship_row2,
+            &ship_type3, &ship_rotation3, &ship_col3, &ship_row3,
+            &ship_type4, &ship_rotation4, &ship_col4, &ship_row4,
+            &ship_type5, &ship_rotation5, &ship_col5, &ship_row5,
             &dummy) == 20) {
 
                 for (int i = 0; i < 5; i++) { // If there are 20 arguments, loop through each data set for each ship
@@ -693,8 +693,10 @@ int process_initialize_packet(int other_client_sockfd, int client_sockfd, int pl
 
                     if (error_code != 0) {
                         minimum_error = (error_code < minimum_error) ? error_code : minimum_error;
+                        ships_placed++;
                     } else {
                         place_ship(type, rotation, row, col, (player == 1) ? p1_board : p2_board, ships_placed + 1);
+                        ships_placed++;
                     }
                 } 
             } else {
@@ -837,7 +839,6 @@ bool process_shoot_packet(int other_client_sockfd, int client_sockfd, int player
                 }
             }
         }
-        printf("Ships remaining%d\n", *opponent_ships_remaining);
         if (!ship_remains) { // If no parts of the ship remain, decrement the remaining ships count
             *opponent_ships_remaining -= 1;
             printf("Ships remaining %d\n", *opponent_ships_remaining);
